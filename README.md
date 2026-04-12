@@ -7,6 +7,6 @@ Hindi MNIST Classification
 33
 
 ## Group Members
-1. ParkJi  
+1. Jan Nguyen  
 2. NM Husar  
 3. Rajveer Jadhav - i6371243
