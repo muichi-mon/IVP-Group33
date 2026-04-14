@@ -8,5 +8,5 @@ Hindi MNIST Classification
 
 ## Group Members
 1. Jan Nguyen  
-2. NM Husar  
+2. NM Husar  - i6329502
 3. Rajveer Jadhav - i6371243
