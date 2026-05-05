@@ -1,3 +1,22 @@
+"""
+Offline data augmentation for Hindi MNIST.
+Generates augmented copies of each training image to disk so YOLO can use them.
+
+Augmentations applied (lecture-recommended for handwritten digits):
+- Elastic distortions (VERY powerful for digits)
+- Gaussian noise
+- Stroke thickness variation (morphological dilation/erosion)
+- Small random shifts (YOLO also does this at train time)
+
+Avoided: flips, extreme transforms.
+
+Usage:
+    python augment_data.py              # generates 2 aug copies per image
+    python augment_data.py --copies 3   # generate 3 copies per image
+    python augment_data.py --workers 8  # override CPU count
+    python augment_data.py --clean      # delete previously generated aug files
+"""
+
 import argparse
 import os
 import time
@@ -54,10 +73,12 @@ def augment_one(img: np.ndarray, rng: np.random.Generator) -> np.ndarray:
 
 
 def process_image(task):
+    """Worker: augment one source image into `copies` output files. Skips existing outputs."""
     img_path, copies, seed = task
     class_dir = img_path.parent
     stem = img_path.stem
 
+    # Skip if all copies already exist (resumable)
     pending = [i for i in range(copies)
                if not (class_dir / f"{stem}{AUG_SUFFIX}{i}.png").exists()]
     if not pending:
@@ -90,6 +111,7 @@ def collect_tasks(copies: int):
         for p in class_dir.glob("*.png"):
             if AUG_SUFFIX in p.stem:
                 continue
+            # Deterministic seed per image from hash of relative path
             seed = abs(hash(str(p.relative_to(TRAIN_SRC)))) % (2**32)
             tasks.append((p, copies, seed))
     return tasks
