@@ -1,8 +1,8 @@
 PY ?= python
 CONFIGS = configs/convnext_tiny.yaml configs/efficientnetv2_s.yaml configs/resnet50d.yaml
 
-.PHONY: help install clean-aug folds train-convnext train-effnet train-resnet \
-        train-all predict-convnext predict-effnet predict-resnet predict-all \
+.PHONY: help install clean-aug folds train-convnext train-effnet train-resnet train-vit \
+        train-all predict-convnext predict-effnet predict-resnet predict-vit predict-all \
         ensemble pseudo pseudo-round submission smoke
 
 help:
@@ -39,7 +39,10 @@ train-effnet: folds
 train-resnet: folds
 	$(PY) -m src.run_kfold --config configs/resnet50d.yaml
 
-train-all: train-convnext train-effnet train-resnet
+train-vit: folds
+	$(PY) -m src.run_kfold --config configs/vit_small.yaml
+
+train-all: train-convnext train-effnet train-resnet train-vit
 
 predict-convnext:
 	@for f in 0 1 2 3 4; do $(PY) -m src.predict --config configs/convnext_tiny.yaml --fold $$f; done
@@ -50,7 +53,10 @@ predict-effnet:
 predict-resnet:
 	@for f in 0 1 2 3 4; do $(PY) -m src.predict --config configs/resnet50d.yaml --fold $$f; done
 
-predict-all: predict-convnext predict-effnet predict-resnet
+predict-vit:
+	@for f in 0 1 2 3 4; do $(PY) -m src.predict --config configs/vit_small.yaml --fold $$f; done
+
+predict-all: predict-convnext predict-effnet predict-resnet predict-vit
 
 ensemble:
 	$(PY) -m src.ensemble

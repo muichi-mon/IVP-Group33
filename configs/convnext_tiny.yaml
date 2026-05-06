@@ -1,8 +1,8 @@
 arch: convnext_tiny
-imgsz: 64
+imgsz: 96
 epochs: 40
 batch_size: 256
-num_workers: 8
+num_workers: 4
 lr: 1.0e-3
 weight_decay: 0.05
 label_smoothing: 0.1

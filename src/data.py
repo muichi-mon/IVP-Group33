@@ -35,8 +35,6 @@ def build_train_transform(imgsz: int = 64) -> A.Compose:
             translate_percent=(-0.10, 0.10),
             shear=(-5, 5),
             p=0.8,
-            mode=0,  # constant
-            cval=0,
         ),
         A.ElasticTransform(alpha=30.0, sigma=4.0, p=0.5),
         A.GridDistortion(num_steps=5, distort_limit=0.2, p=0.3),
@@ -62,7 +60,7 @@ def build_eval_transform(imgsz: int = 64) -> A.Compose:
 
 
 def build_tta_transforms(imgsz: int = 64) -> list[A.Compose]:
-    """7-view TTA: original + 4 rotations + 2 translates."""
+    """11-view TTA: original + 6 rotations + 2 translates + 2 scales."""
     base = [A.Resize(imgsz, imgsz)]
     norm = [A.Normalize(mean=(0.5,), std=(0.5,), max_pixel_value=255.0), ToTensorV2()]
 
@@ -71,12 +69,16 @@ def build_tta_transforms(imgsz: int = 64) -> list[A.Compose]:
 
     return [
         make([]),
-        make([A.Affine(rotate=(-10, -10), p=1.0, mode=0, cval=0)]),
-        make([A.Affine(rotate=(-5, -5), p=1.0, mode=0, cval=0)]),
-        make([A.Affine(rotate=(5, 5), p=1.0, mode=0, cval=0)]),
-        make([A.Affine(rotate=(10, 10), p=1.0, mode=0, cval=0)]),
-        make([A.Affine(translate_percent=(0.05, 0.05), p=1.0, mode=0, cval=0)]),
-        make([A.Affine(translate_percent=(-0.05, -0.05), p=1.0, mode=0, cval=0)]),
+        make([A.Affine(rotate=(-15, -15), p=1.0)]),
+        make([A.Affine(rotate=(-10, -10), p=1.0)]),
+        make([A.Affine(rotate=(-5, -5), p=1.0)]),
+        make([A.Affine(rotate=(5, 5), p=1.0)]),
+        make([A.Affine(rotate=(10, 10), p=1.0)]),
+        make([A.Affine(rotate=(15, 15), p=1.0)]),
+        make([A.Affine(translate_percent=(0.05, 0.05), p=1.0)]),
+        make([A.Affine(translate_percent=(-0.05, -0.05), p=1.0)]),
+        make([A.Affine(scale=(1.1, 1.1), p=1.0)]),
+        make([A.Affine(scale=(0.9, 0.9), p=1.0)]),
     ]
 
 
