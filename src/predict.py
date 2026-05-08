@@ -1,12 +1,3 @@
-"""Test inference with TTA for a trained fold checkpoint.
-
-Usage:
-    python -m src.predict --config configs/convnext_tiny.yaml --fold 0
-
-Output:
-    preds/{arch}_fold{k}.npy   — softmax shape (n_test, 10)
-    preds/test_ids.npy         — int Id array (3000,) — written once
-"""
 from __future__ import annotations
 
 import argparse
@@ -56,7 +47,6 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ckpt_path = ROOT / "checkpoints" / arch / f"fold{args.fold}" / "best.pt"
-    assert ckpt_path.exists(), f"missing checkpoint: {ckpt_path}"
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
 
     model = timm.create_model(arch, pretrained=False, num_classes=10).to(device)
@@ -75,7 +65,6 @@ def main():
     np.save(out_dir / f"{arch}_fold{args.fold}.npy", probs)
     if not (out_dir / "test_ids.npy").exists():
         np.save(out_dir / "test_ids.npy", np.asarray(test_ids, dtype=np.int64))
-    print(f"Wrote preds/{arch}_fold{args.fold}.npy shape={probs.shape}")
 
 
 if __name__ == "__main__":

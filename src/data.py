@@ -1,4 +1,3 @@
-"""Dataset and augmentation pipeline for Hindi MNIST."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -25,8 +24,6 @@ def _gray_to_rgb_normalize() -> A.Compose:
 
 
 def build_train_transform(imgsz: int = 64) -> A.Compose:
-    """Online augmentations tuned for handwritten Devanagari digits.
-    No flips — would change digit identity (e.g. ६ vs ९)."""
     return A.Compose([
         A.Resize(imgsz, imgsz),
         A.Affine(
@@ -60,7 +57,6 @@ def build_eval_transform(imgsz: int = 64) -> A.Compose:
 
 
 def build_tta_transforms(imgsz: int = 64) -> list[A.Compose]:
-    """11-view TTA: original + 6 rotations + 2 translates + 2 scales."""
     base = [A.Resize(imgsz, imgsz)]
     norm = [A.Normalize(mean=(0.5,), std=(0.5,), max_pixel_value=255.0), ToTensorV2()]
 
@@ -83,12 +79,6 @@ def build_tta_transforms(imgsz: int = 64) -> list[A.Compose]:
 
 
 class HindiMNISTTrain(Dataset):
-    """Reads images from data/train/train/<class>/<id>.png using folds.csv.
-
-    Includes optional pseudo-labeled test images (data/test/test/<id>.png).
-    Pseudo rows are flagged in the dataframe with column `pseudo=True`.
-    """
-
     def __init__(
         self,
         df: pd.DataFrame,
@@ -118,7 +108,6 @@ class HindiMNISTTrain(Dataset):
         img = np.array(Image.open(path).convert("L"))
         img = np.expand_dims(img, axis=-1)  # HxWx1
         img = self.transform(image=img)["image"]
-        # Replicate gray channel to 3 for ImageNet-pretrained backbones.
         if img.shape[0] == 1:
             img = img.repeat(3, 1, 1)
         label = int(row["Category"])
@@ -126,8 +115,6 @@ class HindiMNISTTrain(Dataset):
 
 
 class HindiMNISTTest(Dataset):
-    """Test set — flat data/test/test/<id>.png."""
-
     def __init__(self, ids: list[int], transform: A.Compose, test_dir: Path = TEST_DIR):
         self.ids = list(ids)
         self.transform = transform
@@ -156,7 +143,6 @@ def load_fold_split(fold: int, folds_csv: Path = ROOT / "data" / "folds.csv"):
 def mixup_cutmix_collate(batch, num_classes: int = 10,
                          mixup_alpha: float = 0.2, cutmix_alpha: float = 1.0,
                          prob: float = 0.5):
-    """Collate that randomly applies either mixup or cutmix (50/50) with given probability."""
     imgs = torch.stack([b[0] for b in batch])
     labels = torch.tensor([b[1] for b in batch], dtype=torch.long)
     onehot = torch.nn.functional.one_hot(labels, num_classes).float()

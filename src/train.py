@@ -1,16 +1,3 @@
-"""Single-fold trainer for one timm architecture.
-
-Usage:
-    python -m src.train --config configs/convnext_tiny.yaml --fold 0
-    python -m src.train --config configs/convnext_tiny.yaml --fold 0 --debug
-    python -m src.train --config configs/convnext_tiny.yaml --fold 0 --pseudo data/pseudo.csv
-
-Outputs:
-    checkpoints/{arch}/fold{k}/best.pt
-    oof/{arch}_fold{k}.npy   — softmax on the fold's val ids (matches val_df order)
-    oof/{arch}_fold{k}_ids.npy
-    logs/{arch}_fold{k}.csv
-"""
 from __future__ import annotations
 
 import argparse
@@ -198,13 +185,10 @@ def train_one_fold(cfg: dict, fold: int, debug: bool = False,
             }, ckpt_dir / "best.pt")
 
     pd.DataFrame(log_rows).to_csv(log_dir / f"{arch}_fold{fold}.csv", index=False)
-
-    # Save OOF (softmax) aligned with val_df Id order.
     val_ids_in_order = val_df["Id"].to_numpy()
     np.save(oof_dir / f"{arch}_fold{fold}.npy", best_probs)
     np.save(oof_dir / f"{arch}_fold{fold}_ids.npy", val_ids_in_order)
     np.save(oof_dir / f"{arch}_fold{fold}_labels.npy", best_labels)
-    print(f"[{arch} fold{fold}] best val_acc={best_acc:.4f}")
     return {"fold": fold, "best_val_acc": best_acc}
 
 
